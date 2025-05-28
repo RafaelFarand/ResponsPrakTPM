@@ -2,264 +2,131 @@ import 'package:flutter/material.dart';
 import '../models/movie.dart';
 import '../services/api_service.dart';
 
-class EditPage extends StatefulWidget {
+class EditPage extends StatelessWidget {
   final Movie movie;
+  EditPage({required this.movie});
 
-  const EditPage({super.key, required this.movie});
-
-  @override
-  State<EditPage> createState() => _EditPageState();
-}
-
-class _EditPageState extends State<EditPage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _titleController;
-  late TextEditingController _yearController;
-  late TextEditingController _ratingController;
-  late TextEditingController _imgUrlController;
-  late TextEditingController _genreController;
-  late TextEditingController _directorController;
-  late TextEditingController _synopsisController;
-  late TextEditingController _movieUrlController;
-  
-  bool _isLoading = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _titleController = TextEditingController(text: widget.movie.title ?? '');
-    _yearController = TextEditingController(text: widget.movie.year ?? '');
-    _ratingController = TextEditingController(text: widget.movie.rating?.toString() ?? '');
-    _imgUrlController = TextEditingController(text: widget.movie.imgUrl ?? '');
-    _genreController = TextEditingController(text: widget.movie.genre ?? '');
-    _directorController = TextEditingController(text: widget.movie.director ?? '');
-    _synopsisController = TextEditingController(text: widget.movie.synopsis ?? '');
-    _movieUrlController = TextEditingController(text: widget.movie.movieUrl ?? '');
-  }
+  late final titleController = TextEditingController(text: movie.title);
+  late final yearController = TextEditingController(text: movie.year.toString());
+  late final ratingController = TextEditingController(text: movie.rating.toString());
+  late final websiteController = TextEditingController(text: movie.website);
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _yearController.dispose();
-    _ratingController.dispose();
-    _imgUrlController.dispose();
-    _genreController.dispose();
-    _directorController.dispose();
-    _synopsisController.dispose();
-    _movieUrlController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _updateMovie() async {
+  void updateMovie(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final movie = Movie(
-        id: widget.movie.id,
-        title: _titleController.text,
-        year: _yearController.text,
-        rating: double.parse(_ratingController.text),
-        imgUrl: _imgUrlController.text,
-        genre: _genreController.text,
-        director: _directorController.text,
-        synopsis: _synopsisController.text,
-        movieUrl: _movieUrlController.text,
+      final updatedMovie = Movie(
+        id: movie.id,
+        title: titleController.text,
+        year: int.parse(yearController.text),
+        rating: double.parse(ratingController.text),
+        website: websiteController.text,
       );
 
-      bool success = await ApiService.updateMovie(widget.movie.id ?? '', movie);
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (success) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Film berhasil diperbarui'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context, true);
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Gagal memperbarui film'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+      await ApiService.updateMovie(movie.id!, updatedMovie);
+      Navigator.pop(context);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.pink.shade50,
       appBar: AppBar(
-        title: const Text('Edit Film'),
-        backgroundColor: Colors.blue.shade600,
-        foregroundColor: Colors.white,
+        title: const Text('Edit Movie'),
+        backgroundColor: Colors.pink,
+        elevation: 2,
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Judul Film',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Judul film tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _yearController,
-              decoration: const InputDecoration(
-                labelText: 'Tahun Rilis',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Tahun rilis tidak boleh kosong';
-                }
-                if (int.tryParse(value) == null) {
-                  return 'Tahun harus berupa angka';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _ratingController,
-              decoration: const InputDecoration(
-                labelText: 'Rating (0-10)',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Rating tidak boleh kosong';
-                }
-                double? rating = double.tryParse(value);
-                if (rating == null) {
-                  return 'Rating harus berupa angka';
-                }
-                if (rating < 0 || rating > 10) {
-                  return 'Rating harus antara 0-10';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _imgUrlController,
-              decoration: const InputDecoration(
-                labelText: 'URL Gambar',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'URL gambar tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _genreController,
-              decoration: const InputDecoration(
-                labelText: 'Genre',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Genre tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _directorController,
-              decoration: const InputDecoration(
-                labelText: 'Sutradara',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Sutradara tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _synopsisController,
-              decoration: const InputDecoration(
-                labelText: 'Sinopsis',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 4,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Sinopsis tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            TextFormField(
-              controller: _movieUrlController,
-              decoration: const InputDecoration(
-                labelText: 'URL Info Film',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'URL info film tidak boleh kosong';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _updateMovie,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade600,
-                  foregroundColor: Colors.white,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Update Movie Info',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.pink.shade700,
                 ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        'Update Film',
-                        style: TextStyle(fontSize: 16),
-                      ),
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              _buildTextField(
+                controller: titleController,
+                label: 'Title',
+                icon: Icons.movie,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: yearController,
+                label: 'Year',
+                icon: Icons.date_range,
+                inputType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: ratingController,
+                label: 'Rating',
+                icon: Icons.star,
+                inputType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              _buildTextField(
+                controller: websiteController,
+                label: 'Website URL',
+                icon: Icons.link,
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => updateMovie(context),
+                  icon: Icon(Icons.save),
+                  label: Text('Update Movie'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.pink,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType inputType = TextInputType.text,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: inputType,
+      validator: (value) => value == null || value.isEmpty ? 'Please enter $label' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.pink),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.pink.shade200),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.pink, width: 2),
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );

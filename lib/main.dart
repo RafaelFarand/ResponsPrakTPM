@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'services/api_service.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Movie App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.pink,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const SplashScreen(),
+      home: SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
-
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
@@ -43,16 +38,14 @@ class _SplashScreenState extends State<SplashScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     
-    await Future.delayed(const Duration(seconds: 2));
-    
-    if (mounted) {
+    Future.delayed(Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => isLoggedIn ? const HomePage() : const LoginPage(),
+          builder: (context) => isLoggedIn ? HomePage() : LoginPage(),
         ),
       );
-    }
+    });
   }
 
   @override
@@ -65,18 +58,18 @@ class _SplashScreenState extends State<SplashScreen> {
             Icon(
               Icons.movie,
               size: 100,
-              color: Colors.blue,
+              color: Colors.pink,
             ),
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: 20),
+            Text(
               'Movie App',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 20),
-            const CircularProgressIndicator(),
+            SizedBox(height: 20),
+            CircularProgressIndicator(),
           ],
         ),
       ),

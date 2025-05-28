@@ -5,13 +5,14 @@ import '../models/movie.dart';
 class ApiService {
   static const String baseUrl = 'https://tpm-api-responsi-a-h-872136705893.us-central1.run.app/api/v1';
 
+  // Get all movies
   static Future<List<Movie>> getMovies() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/movies'));
       
       if (response.statusCode == 200) {
-        final movieModel = MovieModel.fromJson(json.decode(response.body));
-        return movieModel.data ?? [];
+        final movieResponse = MovieResponse.fromJson(json.decode(response.body));
+        return movieResponse.data;
       } else {
         throw Exception('Failed to load movies');
       }
@@ -20,66 +21,71 @@ class ApiService {
     }
   }
 
-  static Future<Movie> getMovieById(String id) async {
+  // Get movie by ID
+  static Future<Movie> getMovieById(int id) async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/movies/$id'));
       
       if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        // Jika response berupa object langsung
-        if (jsonData is Map<String, dynamic>) {
-          return Movie.fromJson(jsonData);
-        }
-        // Jika response berupa MovieModel
-        else {
-          final movieModel = MovieModel.fromJson(jsonData);
-          if (movieModel.data != null && movieModel.data!.isNotEmpty) {
-            return movieModel.data!.first;
-          }
-        }
-        throw Exception('Movie not found');
+        final movieResponse = SingleMovieResponse.fromJson(json.decode(response.body));
+        return movieResponse.data;
       } else {
-        throw Exception('Failed to load movie');
+        throw Exception('Failed to load movie details');
       }
     } catch (e) {
       throw Exception('Error: $e');
     }
   }
 
+  // Create new movie
   static Future<bool> createMovie(Movie movie) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/movies'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: json.encode(movie.toJson()),
       );
       
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
-      return false;
+      throw Exception('Error: $e');
     }
   }
 
-  static Future<bool> updateMovie(String id, Movie movie) async {
+  // Update movie
+  static Future<bool> updateMovie(int id, Movie movie) async {
     try {
-      final response = await http.put(
+      final response = await http.patch(
         Uri.parse('$baseUrl/movies/$id'),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: json.encode(movie.toJson()),
       );
       
       return response.statusCode == 200;
     } catch (e) {
-      return false;
+      throw Exception('Error: $e');
     }
   }
 
-  static Future<bool> deleteMovie(String id) async {
+  // Delete movie
+  static Future<bool> deleteMovie(int id) async {
     try {
       final response = await http.delete(Uri.parse('$baseUrl/movies/$id'));
+      
       return response.statusCode == 200 || response.statusCode == 204;
     } catch (e) {
-      return false;
+      throw Exception('Error: $e');
     }
+  }
+
+  // Login simulation (since no actual login endpoint provided)
+  static Future<bool> login(String username, String password) async {
+    // Simulate login - in real app, this would call actual login endpoint
+    await Future.delayed(Duration(seconds: 1));
+    return password == '12345678'; // Simple validation
   }
 }
