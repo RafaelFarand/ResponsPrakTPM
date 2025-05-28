@@ -126,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       SizedBox(height: 24),
                       Text(
-                        'Responsiii',
+                        'MOVIE LIST',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w700,
